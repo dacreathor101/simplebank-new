@@ -62,11 +62,10 @@ def random_time(year, month, day):
 # Routes
 # =====================
 @app.route("/")
-def home():
+def landing():
     if "user_id" in session:
-        user = db.session.get(User, session["user_id"])
-        return render_template("home.html", user=user, accounts=user.accounts)
-    return render_template("base.html")
+        return redirect("/home")  # redirect logged-in users to dashboard
+    return render_template("landing.html")
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -92,10 +91,21 @@ def login():
         if user:
             session["user_id"] = user.id
             flash("Login successful! 👋", "success")
-            return redirect("/")
+            return redirect("/home")
         flash("Invalid credentials!", "danger")
         return redirect("/login")
     return render_template("login.html")
+
+@app.route("/home")
+def home():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect("/login")
+
+    user = User.query.get(user_id)
+    accounts = Account.query.filter_by(user_id=user.id).all()
+    return render_template("home.html", user=user, accounts=accounts)
+
 
 @app.route("/deposit/<int:account_id>", methods=["POST"])
 def deposit(account_id):
@@ -290,5 +300,4 @@ if __name__ == "__main__":
             print("✅ Seed data created successfully!")
 
     app.run(debug=True)
-
 
