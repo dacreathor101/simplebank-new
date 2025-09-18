@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white">
+        <h5>Customer Care Chat</h5>
+      </div>
+      <div class="card-body" style="background:#ece5dd;">
+        <!-- Chat container -->
+        <div id="chat-box" style="min-height:400px; padding:15px; background:#ece5dd;">
+        </div>
+
+        <!-- Input area -->
+        <div class="d-flex mt-2">
+          <input type="text" id="user-input" class="form-control me-2" placeholder="Type a message..." />
+          <button id="send-btn" class="btn btn-success">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* WhatsApp-style bubbles */
+.message {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 18px;
+  margin: 6px 0;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background: #dcf8c6;
+  align-self: flex-end;
+  text-align: right;
+  border-bottom-right-radius: 0;
+}
+
+.message.system {
+  background: #ffffff;
+  align-self: flex-start;
+  text-align: left;
+  border-bottom-left-radius: 0;
+}
+
+/* Flex column so bubbles stack neatly */
+#chat-box {
+  display: flex;
+  flex-direction: column;
+}
+</style>
+
+<script>
+const chatBox = document.getElementById("chat-box");
+const input = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+
+// Response script
+const responses = [
+    "Welcome to our customer care service. A representative will join you shortly.",
+    "Good day, dear valued customer. I'm Erica from BMO Customer Support. How may I assist you today?",
+    "For verification, kindly provide the account holder’s full name and account number.",
+    "I’ve checked — a freeze has been placed on this account due to suspicious activities including unusual login attempts, unverified withdrawals, and flagged international transfers. An email was sent requesting verification, but no response was received.",
+    "To resolve this, please visit the branch where your account was registered, verify your identity, and request an OLBB (Online Banking Business) PIN to restore international access.",
+    "We sincerely apologize for the inconvenience. These measures are mandated by the U.S. Department of the Treasury, and unfortunately, we cannot override them.",
+    "Since there are no further questions, we wish you a pleasant day and thank you for banking with BMO."
+];
+
+let step = 0;
+let waitingForUser = false; // system waits for user reply before continuing
+
+// Add chat bubble
+function addMessage(text, sender="system") {
+    const msgWrapper = document.createElement("div");
+    msgWrapper.style.display = "flex";
+    msgWrapper.style.justifyContent = sender === "user" ? "flex-end" : "flex-start";
+
+    const msg = document.createElement("div");
+    msg.className = `message ${sender}`;
+    msg.textContent = text;
+
+    msgWrapper.appendChild(msg);
+    chatBox.appendChild(msgWrapper);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Disable chat input after final message
+function disableChat() {
+    input.disabled = true;
+    input.placeholder = "Chat ended";
+    sendBtn.disabled = true;
+}
+
+// Show first system message immediately
+addMessage(responses[step++]);
+
+// Auto-response (only after user reply)
+function scheduleAutoResponse() {
+    if (step >= responses.length) return;
+    waitingForUser = false; // system takes over until next reply
+
+    // "typing..." bubble after 26s
+    setTimeout(() => {
+        const typingWrapper = document.createElement("div");
+        typingWrapper.style.display = "flex";
+        typingWrapper.style.justifyContent = "flex-start";
+        typingWrapper.id = "typing-indicator";
+
+        const typingMsg = document.createElement("div");
+        typingMsg.className = "message system";
+        typingMsg.textContent = "typing...";
+        typingWrapper.appendChild(typingMsg);
+
+        chatBox.appendChild(typingWrapper);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Replace typing with actual response after 2–5s
+        const typingDelay = Math.floor(Math.random() * 3000) + 2000;
+        setTimeout(() => {
+            const typingIndicator = document.getElementById("typing-indicator");
+            if (typingIndicator) typingIndicator.remove();
+            addMessage(responses[step++], "system");
+
+            if (step >= responses.length) {
+                disableChat(); // end chat
+            } else {
+                waitingForUser = true; // wait for next user input
+            }
+        }, typingDelay);
+    }, 26000);
+}
+
+// Send button
+sendBtn.onclick = () => {
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, "user");
+    input.value = "";
+
+    if (!waitingForUser) {
+        return; // ignore if system hasn't finished last reply
+    }
+
+    scheduleAutoResponse();
+    waitingForUser = false;
+};
+
+// Press Enter to send
+input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendBtn.click();
+});
+
+// First system message already sent → now wait for user
+waitingForUser = true;
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12 mb-4 text-center">
+    <h4 class="card-title">Welcome, {{ user.username }} 👋</h4>
+    <p class="lead text-muted">Manage your accounts and transactions below</p>
+  </div>
+</div>
+
+<div class="row">
+  {% for account in accounts %}
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-lg border-0 h-100">
+        <!-- Card Header -->
+        <div class="card-header bg-primary text-white text-center">
+          <i class="fa-solid fa-building-columns fa-lg me-2"></i>
+          <strong>{{ account.name }}</strong>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body text-center">
+          <p class="text-muted mb-1">Current Balance</p>
+          <h3 class="fw-bold {% if account.balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+            ${{ "{:,.2f}".format(account.balance) }}
+          </h3>
+
+          <hr>
+
+          <!-- Account Number with toggle -->
+          <p class="mb-1">
+            <i class="fa-solid fa-credit-card me-2 text-secondary"></i>
+            <strong>Account Number:</strong>
+            <span id="acct-{{ account.id }}" class="d-none">{{ account.account_number }}</span>
+            <span id="acct-hidden-{{ account.id }}">••••••••••</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleField('acct', {{ account.id }})">👁️</button>
+          </p>
+
+          <!-- Routing Number with toggle -->
+          <p>
+            <i class="fa-solid fa-code-branch me-2 text-secondary"></i>
+            <strong>Routing Number:</strong>
+            <span id="route-{{ account.id }}" class="d-none">{{ account.routing_number }}</span>
+            <span id="route-hidden-{{ account.id }}">•••••••••</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleField('route', {{ account.id }})">👁️</button>
+          </p>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-footer bg-light">
+          <!-- Deposit Form -->
+          <form method="POST" action="/deposit/{{ account.id }}" class="mb-2">
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" step="0.01" name="amount" placeholder="Deposit amount" class="form-control" required>
+              <button type="submit" class="btn btn-success">Deposit</button>
+            </div>
+          </form>
+
+          <!-- Withdraw Form -->
+          <form method="POST" action="/withdraw/{{ account.id }}">
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" step="0.01" name="amount" placeholder="Withdraw amount" class="form-control" required>
+              <button type="submit" class="btn btn-danger">Withdraw</button>
+            </div>
+          </form>
+
+          <!-- Actions -->
+          <div class="d-grid gap-2 mt-3">
+            <a href="/transfer/{{ account.id }}" class="btn btn-warning">
+              <i class="fa-solid fa-money-bill-transfer me-1"></i> Transfer
+            </a>
+            <a href="/history/{{ account.id }}" class="btn btn-outline-primary">
+              <i class="fa-solid fa-file-invoice-dollar me-1"></i> Transaction History
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+function toggleField(field, id) {
+    const shown = document.getElementById(`${field}-${id}`);
+    const hidden = document.getElementById(`${field}-hidden-${id}`);
+    if (shown.classList.contains("d-none")) {
+        shown.classList.remove("d-none");
+        hidden.classList.add("d-none");
+    } else {
+        shown.classList.add("d-none");
+        hidden.classList.remove("d-none");
+    }
+}
+</script>
+{% endblock %}
