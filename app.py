@@ -264,7 +264,7 @@ if __name__ == "__main__":
 
             # Business Account
             business = Account(
-                name="Danowell LLC",
+                name="Davenowell LLC",
                 balance=3_750_000,
                 account_number=random_account_number(),
                 routing_number=routing_number,  # same routing number
