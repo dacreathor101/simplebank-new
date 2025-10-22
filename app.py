@@ -299,5 +299,6 @@ if __name__ == "__main__":
             db.session.commit()
             print("✅ Seed data created successfully!")
 
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.run(debug=True)
 
