@@ -230,7 +230,9 @@ if __name__ == "__main__":
             user = User(username="Melodee", password="Goodluck60!")
             db.session.add(user)
             db.session.commit()
-
+             print("✅ Created default user: Melodee / Goodluck60!")
+            else:
+            print("✅ User already exists:", user.username)
             # Personal Account
             personal = Account(
                 name="David Nowell (Personal)",
