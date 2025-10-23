@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import login_required, current_user
 from datetime import datetime
 import random
 from markupsafe import Markup
