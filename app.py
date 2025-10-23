@@ -99,14 +99,25 @@ def login():
 @app.route("/home")
 def home():
     from flask import session, redirect, url_for, render_template
-    from models import Account  # adjust if needed
+    from models import Account, User  # adjust if your model import is different
 
+    # Get the logged-in user ID from session
     user_id = session.get("user_id")
     if not user_id:
-        return redirect(url_for("login"))  # send to login if not logged in
+        # No user in session — redirect to login page
+        return redirect(url_for("login"))
 
-    accounts = Account.query.filter_by(user_id=user_id).all()
-    return render_template("home.html", accounts=accounts)
+    # Try to fetch the user object
+    user = User.query.get(user_id)
+    if not user:
+        # Somehow the user ID doesn’t exist — clear session and redirect
+        session.pop("user_id", None)
+        return redirect(url_for("login"))
+
+    # Fetch all accounts for that user
+    accounts = Account.query.filter_by(user_id=user.id).all()
+
+    return render_template("home.html", user=user, accounts=accounts)
 
 
 
