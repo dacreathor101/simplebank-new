@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import login_required, current_user
 from datetime import datetime
 import random
 from markupsafe import Markup
@@ -99,13 +98,16 @@ def login():
 
 @app.route("/home")
 def home():
+    from flask import session, redirect, url_for, render_template
+    from models import Account  # adjust if needed
+
     user_id = session.get("user_id")
     if not user_id:
-        return redirect("/login")
+        return redirect(url_for("login"))  # send to login if not logged in
 
-    user = User.query.get(user_id)
-    accounts = Account.query.filter_by(user_id=user.id).all()
-    return render_template("home.html", user=user, accounts=accounts)
+    accounts = Account.query.filter_by(user_id=user_id).all()
+    return render_template("home.html", accounts=accounts)
+
 
 
 @app.route("/deposit/<int:account_id>", methods=["POST"])
